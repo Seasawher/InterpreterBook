@@ -37,7 +37,7 @@ func TestNextToken(t *testing.T) {
   }
 }
 -/
-import InterpreterBook.Token
+import Monkey.Token.Token
 
 opaque Lexer : Type
 

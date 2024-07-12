@@ -9,6 +9,6 @@ package "InterpreterBook" where
   ]
 
 @[default_target]
-lean_lib «InterpreterBook» where
+lean_lib «Monkey» where
   -- add library configuration options here
-  globs := #[.submodules `InterpreterBook]
+  globs := #[.submodules `Monkey]
