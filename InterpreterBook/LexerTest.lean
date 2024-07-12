@@ -37,14 +37,29 @@ func TestNextToken(t *testing.T) {
   }
 }
 -/
-import InterpreterBook.Basic
+import InterpreterBook.Token
 
 opaque Lexer : Type
 
 def Lexer.nextToken (l : Lexer) : Token := sorry
 
--- def testNextToken : IO Unit := Id.run do
---   let input := "=+(){},;"
---   let tests := #[
---   ]
---   sorry
+open TokenType
+
+def testNextToken : IO Unit := do
+  let input := "=+(){},;"
+  let tests : Array (TokenType × String) := #[
+    (ASSIGN, "="),
+    (PLUS, "+"),
+    (LPAREN, "("),
+    (RPAREN, ")"),
+    (LBRACE, "{"),
+    (RBRACE, "}"),
+    (COMMA, ","),
+    (SEMICOLON, ";"),
+    (EOF, "")
+  ]
+  -- let l : Lexer := Lexer.mk input
+  -- for tt in tests do
+  --   let tok := l.nextToken
+  --   if tok.type
+  sorry
