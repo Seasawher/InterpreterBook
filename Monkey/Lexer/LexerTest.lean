@@ -1,45 +1,5 @@
-/-
-// lexer/lexer_test.go
-
-package lexer
-import (
- "testing"
- "monkey/token"
-)
-func TestNextToken(t *testing.T) {
-  input := `=+(){},;`
-  tests := []struct {
-    expectedType token.TokenType
-    expectedLiteral string
-  }{
-    {token.ASSIGN, "="},
-    {token.PLUS, "+"},
-    {token.LPAREN, "("},
-    {token.RPAREN, ")"},
-
-    {token.LBRACE, "{"},
-    {token.RBRACE, "}"},
-    {token.COMMA, ","},
-    {token.SEMICOLON, ";"},
-    {token.EOF, ""},
-  }
-  l := New(input)
-  for i, tt := range tests {
-    tok := l.NextToken()
-    if tok.Type != tt.expectedType {
-      t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q",
-      i, tt.expectedType, tok.Type)
-    }
-    if tok.Literal != tt.expectedLiteral {
-      t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q",
-      i, tt.expectedLiteral, tok.Literal)
-    }
-  }
-}
--/
+import Monkey.Lexer.Lexer
 import Monkey.Token.Token
-
-opaque Lexer : Type
 
 def Lexer.nextToken (l : Lexer) : Token := sorry
 
@@ -58,8 +18,12 @@ def testNextToken : IO Unit := do
     (SEMICOLON, ";"),
     (EOF, "")
   ]
-  -- let l : Lexer := Lexer.mk input
-  -- for tt in tests do
-  --   let tok := l.nextToken
-  --   if tok.type
-  sorry
+  let l : Lexer := Lexer.new input
+  for tt in tests do
+    let tok := l.nextToken
+    if tok.type ≠ tt.fst then
+      throw <| .userError s!"tests failed: - tokentype wrong. expected={tt.fst}, got={tok.type}"
+    if tok.literal ≠ tt.snd then
+      throw <| .userError s!"tests failed: - literal wrong. expected={tt.snd}, got={tok.literal}"
+
+  IO.println s!"ok!"

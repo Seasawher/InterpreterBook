@@ -14,7 +14,7 @@ inductive TokenType where
   | RBRACE
   | FUNCTION
   | LET
-deriving Repr
+deriving Repr, DecidableEq
 
 def TokenType.toString (t : TokenType) : String :=
   match t with
@@ -39,4 +39,4 @@ instance : ToString TokenType where
 structure Token where
   type : TokenType
   literal : String
-deriving Repr
+deriving Repr, DecidableEq
