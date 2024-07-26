@@ -1,7 +1,7 @@
 import Monkey.Lexer.Lexer
 import Monkey.Token.Token
 
-open TokenType
+open TokenType Lexer
 
 def testNextToken (input : String) (expected : Array (TokenType × String)) : IO Unit := do
   let mut l : Lexer := Lexer.new input
@@ -15,19 +15,19 @@ def testNextToken (input : String) (expected : Array (TokenType × String)) : IO
 
   IO.println s!"ok!"
 
--- #eval testNextToken
---   (input := "=+(){},;")
---   (expected := #[
---     (ASSIGN, "="),
---     (PLUS, "+"),
---     (LPAREN, "("),
---     (RPAREN, ")"),
---     (LBRACE, "{"),
---     (RBRACE, "}"),
---     (COMMA, ","),
---     (SEMICOLON, ";"),
---     (EOF, "")
---   ])
+#eval testNextToken
+  (input := "=+(){},;")
+  (expected := #[
+    (ASSIGN, "="),
+    (PLUS, "+"),
+    (LPAREN, "("),
+    (RPAREN, ")"),
+    (LBRACE, "{"),
+    (RBRACE, "}"),
+    (COMMA, ","),
+    (SEMICOLON, ";"),
+    (EOF, "")
+  ])
 
 -- #eval testNextToken
 --   (input := "let five = 5;
