@@ -39,4 +39,4 @@ instance : ToString TokenType where
 structure Token where
   type : TokenType
   literal : String
-deriving Repr, DecidableEq
+deriving Repr, BEq, DecidableEq

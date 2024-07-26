@@ -50,23 +50,27 @@ def readIdentifier : StateM Lexer String := do
 
 open TokenType
 
+-- Char を String に変換する関数
+#check String.singleton
+
 /-- Lexer を更新しながら、次のトークンを読む -/
 def nextToken : StateM Lexer Token := do
   let mut l ← get
+  let ch := String.singleton l.ch
   let mut tok := match l.ch with
-    | '=' => Token.mk ASSIGN (String.singleton l.ch)
-    | '+' => Token.mk PLUS (String.singleton l.ch)
-    | '(' => Token.mk LPAREN (String.singleton l.ch)
-    | ')' => Token.mk RPAREN (String.singleton l.ch)
-    | '{' => Token.mk LBRACE (String.singleton l.ch)
-    | '}' => Token.mk RBRACE (String.singleton l.ch)
-    | ',' => Token.mk COMMA (String.singleton l.ch)
-    | ';' => Token.mk SEMICOLON (String.singleton l.ch)
-    | '\x00' => Token.mk EOF ""
-    | _ => Token.mk ILLEGAL (String.singleton l.ch)
+    | '=' => ⟨.ASSIGN, ch⟩
+    | '+' => ⟨.PLUS, ch⟩
+    | '(' => ⟨.LPAREN, ch⟩
+    | ')' => ⟨.RPAREN, ch⟩
+    | '{' => ⟨.LBRACE, ch⟩
+    | '}' => ⟨.RBRACE, ch⟩
+    | ',' => ⟨.COMMA, ch⟩
+    | ';' => ⟨.SEMICOLON, ch⟩
+    | '\x00' => ⟨.EOF, ""⟩
+    | _ => ⟨.ILLEGAL, ch⟩
   if l.ch.isLetter then
     let literal ← readIdentifier
-    tok := Token.mk (if literal == "let" then LET else IDENT) literal
+    tok := ⟨if literal == "let" then LET else IDENT, literal⟩
   readChar
   return tok
 
