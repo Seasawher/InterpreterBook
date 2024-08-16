@@ -94,3 +94,29 @@ def testNextToken (input : String) (expected : Array (TokenType × String)) : IO
     (GT, ">"),
     (INT, "5")
   ])
+
+#eval testNextToken
+  (input := "if (5 < 10) {
+  return true;
+  } else {
+  return false;
+  }")
+  (expected := #[
+    (IF, "if"),
+    (LPAREN, "("),
+    (INT, "5"),
+    (LT, "<"),
+    (INT, "10"),
+    (RPAREN, ")"),
+    (LBRACE, "{"),
+    (RETURN, "return"),
+    (TRUE, "true"),
+    (SEMICOLON, ";"),
+    (RBRACE, "}"),
+    (ELSE, "else"),
+    (LBRACE, "{"),
+    (RETURN, "return"),
+    (FALSE, "false"),
+    (SEMICOLON, ";"),
+    (RBRACE, "}")
+  ])
