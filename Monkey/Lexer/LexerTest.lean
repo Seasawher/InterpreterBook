@@ -6,12 +6,22 @@ open Token Lexer
 /-- NestToken 関数をテストする -/
 def testNextToken (input : String) (expected : Array Token) : IO Unit := do
   let mut l : Lexer := Lexer.new input
-  for tt in expected do
-  for expTok in expected do
+  let mut actualTokens : Array Token := #[]
+
+  while True do
     let ⟨tok, l'⟩ := l.nextToken |>.run
     l := l'
-    if tok ≠ expTok then
-      throw <| .userError s!"tests failed: - token wrong at \"{expTok}\". expected={expTok}, got={tok}"
+    actualTokens := actualTokens.push tok
+    if tok = EOF then break
+
+  if actualTokens.size ≠ expected.size then
+    throw <| .userError s!"tests failed: - token count wrong. expected={expected.size}, got={actualTokens.size}"
+
+  let testCases := Array.zip expected actualTokens
+
+  for ⟨exp, actual⟩ in testCases do
+    if exp ≠ actual then
+      throw <| .userError s!"tests failed: - token wrong. expected={exp}, got={actual}"
 
   IO.println s!"ok!"
 
