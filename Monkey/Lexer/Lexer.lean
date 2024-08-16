@@ -56,7 +56,7 @@ def readIdentifier : StateM Lexer String := do
     |>.drop position
 
 /-- Lexer を更新しつつ、Number ではない文字列が出てくるまで読み進める -/
-def readNumber : StateM Lexer String := do
+def readNumber : StateM Lexer Int := do
   let mut l ← get
   let position := l.position
   while l.ch.isDigit do
@@ -65,8 +65,9 @@ def readNumber : StateM Lexer String := do
   return l.input
     |>.take l.position
     |>.drop position
+    |>.toInt!
 
-open TokenType
+open Token
 
 -- Char を String に変換する関数
 #check String.singleton
@@ -83,34 +84,31 @@ def skipWhitespace : StateM Lexer Unit := do
 def nextToken : StateM Lexer Token := do
   skipWhitespace
   let mut l ← get
-  let ch := String.singleton l.ch
   let mut tok := match l.ch with
-    | '=' => ⟨.ASSIGN, ch⟩
-    | '+' => ⟨.PLUS, ch⟩
-    | '-' => ⟨.MINUS, ch⟩
-    | '!' => ⟨.BANG, ch⟩
-    | '/' => ⟨.SLASH, ch⟩
-    | '*' => ⟨.ASTERISK, ch⟩
-    | '<' => ⟨.LT, ch⟩
-    | '>' => ⟨.GT, ch⟩
-    | '(' => ⟨.LPAREN, ch⟩
-    | ')' => ⟨.RPAREN, ch⟩
-    | '{' => ⟨.LBRACE, ch⟩
-    | '}' => ⟨.RBRACE, ch⟩
-    | ',' => ⟨.COMMA, ch⟩
-    | ';' => ⟨.SEMICOLON, ch⟩
-    | '\x00' => ⟨.EOF, ""⟩
-    | _ => ⟨.ILLEGAL, ch⟩
+    | '=' => ASSIGN
+    | '+' => PLUS
+    | '-' => MINUS
+    | '!' => BANG
+    | '/' => SLASH
+    | '*' => ASTERISK
+    | '<' => LT
+    | '>' => GT
+    | '(' => LPAREN
+    | ')' => RPAREN
+    | '{' => LBRACE
+    | '}' => RBRACE
+    | ',' => COMMA
+    | ';' => SEMICOLON
+    | '\x00' => EOF
+    | _ => ILLEGAL
   if l.ch.isLetter then
     let literal ← readIdentifier
-    let tokenType := LookupIdent literal
-    tok := ⟨tokenType, literal⟩
-    return tok
+    let token := LookupIdent literal
+    return token
   else if l.ch.isDigit then
     let literal ← readNumber
-    let tokenType := INT
-    tok := ⟨tokenType, literal⟩
-    return tok
+    let token : Token := INT literal
+    return token
   readChar
   return tok
 
