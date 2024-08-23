@@ -35,6 +35,11 @@ def readChar : StateM Lexer Unit := do
     else { l with ch := l.input.get ⟨l.readPosition⟩}
   set { l' with position := l.readPosition, readPosition := l.readPosition + 1 }
 
+/-- Lexer を進めることなく、入力を覗き見(peek)する `readChar` の変種 -/
+def peekChar (l : Lexer) : Char :=
+  if l.readPosition ≥ l.input.length then '\x00'
+  else l.input.get ⟨l.readPosition⟩
+
 /-- デフォルト値を持たせたコンストラクタの変種 -/
 def mkD (input : String) (position readPosition : Nat := 0)
     (ch : Char := '\x00') : Lexer :=
@@ -84,6 +89,19 @@ def skipWhitespace : StateM Lexer Unit := do
 def nextToken : StateM Lexer Token := do
   skipWhitespace
   let mut l ← get
+
+  /- 2文字トークンの処理 -/
+  if l.ch == '=' && l.peekChar == '=' then
+    readChar
+    readChar
+    return EQ
+
+  if l.ch == '!' && l.peekChar == '=' then
+    readChar
+    readChar
+    return NOT_EQ
+
+  /- 1文字トークンの処理 -/
   let mut tok := match l.ch with
     | '=' => ASSIGN
     | '+' => PLUS

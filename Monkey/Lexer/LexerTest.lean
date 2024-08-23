@@ -15,6 +15,7 @@ def testNextToken (input : String) (expected : Array Token) : IO Unit := do
     if tok = EOF then break
 
   if actualTokens.size ≠ expected.size then
+    dbg_trace actualTokens
     throw <| .userError s!"tests failed: - token count wrong. expected={expected.size}, got={actualTokens.size}"
 
   let testCases := Array.zip expected actualTokens
@@ -106,6 +107,7 @@ def testNextToken (input : String) (expected : Array Token) : IO Unit := do
     EOF
   ])
 
+-- return とか true とかのテスト
 #eval testNextToken
   (input := "if (5 < 10) {
   return true;
@@ -130,5 +132,21 @@ def testNextToken (input : String) (expected : Array Token) : IO Unit := do
     FALSE,
     SEMICOLON,
     RBRACE,
+    EOF
+  ])
+
+-- `==` とか `!=` とかのテスト
+#eval testNextToken
+  (input := "10 == 10;
+  10 != 9;")
+  (expected := #[
+    INT 10,
+    EQ,
+    INT 10,
+    SEMICOLON,
+    INT 10,
+    NOT_EQ,
+    INT 9,
+    SEMICOLON,
     EOF
   ])

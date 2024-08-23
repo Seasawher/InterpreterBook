@@ -46,6 +46,10 @@ inductive Token where
   | LT
   /-- 大なり ">" -/
   | GT
+  /-- 等号 `==` -/
+  | EQ
+  /-- 等しくない `!=` -/
+  | NOT_EQ
   /-- true : Bool -/
   | TRUE
   /-- false : Bool -/
@@ -81,6 +85,8 @@ def Token.toString (t : Token) : String :=
   | .SLASH => "/"
   | .LT => "<"
   | .GT => ">"
+  | .EQ => "=="
+  | .NOT_EQ => "!="
   | .TRUE => "TRUE"
   | .FALSE => "FALSE"
   | .IF => "IF"
