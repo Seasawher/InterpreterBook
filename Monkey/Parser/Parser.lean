@@ -12,8 +12,6 @@ structure Parser where
   /-- 次のトークン -/
   peekToken : Token
 
-#check Lexer.readChar
-
 /-- curToken と peekToken を次に進める -/
 def Parser.nextToken : StateM Parser Unit := do
   let p ← get
