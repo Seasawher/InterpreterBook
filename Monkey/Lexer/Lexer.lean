@@ -130,4 +130,10 @@ def nextToken : StateM Lexer Token := do
   readChar
   return tok
 
+/-- Lexer.nextToken の StateM を使用しないバージョン。
+出力は、「新しく読み込んだ Token」と「更新後の Lexer」の組。
+実は不要かもしれない。 -/
+def runNextToken (l : Lexer) : Token × Lexer :=
+  Id.run <| StateT.run Lexer.nextToken l
+
 end Lexer

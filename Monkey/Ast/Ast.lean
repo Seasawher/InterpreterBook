@@ -1,12 +1,24 @@
+import Monkey.Token.Token
 
 /-- 式 -/
 inductive Expression where
+  /-- 識別子 -/
+  | identifier (token : Token) (value : String) : Expression
 
-/-- 文 -/
+/-- Expression を文字列に変換する -/
+def Expression.tokenLiteral (e : Expression) : String :=
+  match e with
+  | .identifier token _ => s!"{token}"
+
+/-- 文。本文とは異なる実装を採用しており、`statementNode()` に相当するものは不要。-/
 inductive Statement where
+  /-- let 文 -/
+  | letStmt (token : Token) (name : String) (value : Expression) : Statement
 
 /-- Statement の ToString 関数に相当するもの -/
-def Statement.tokenLiteral (s : Statement) : String := "hello Statement!"
+def Statement.tokenLiteral (s : Statement) : String :=
+  match s with
+  | .letStmt token _ _ => s!"{token}"
 
 /-- AST のノード -/
 inductive Node where

@@ -62,6 +62,9 @@ inductive Token where
   | RETURN
 deriving Repr, BEq, DecidableEq
 
+/-- `ILLEGAL` を初期値にする -/
+instance : Inhabited Token := ⟨Token.ILLEGAL⟩
+
 /-- Token を文字列に変換する -/
 def Token.toString (t : Token) : String :=
   match t with
