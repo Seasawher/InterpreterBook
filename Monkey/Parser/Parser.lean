@@ -28,5 +28,5 @@ def Parser.new (l : Lexer) : Parser :=
   { l := l'', curToken, peekToken }
 
 /-- プログラムをパースする -/
-def Parser.parseProgram : Program :=
-  List.nil
+def Parser.parseProgram (p : Parser) : Option Program :=
+  some List.nil
