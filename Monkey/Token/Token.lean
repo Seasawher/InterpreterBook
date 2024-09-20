@@ -62,6 +62,13 @@ inductive Token where
   | RETURN
 deriving Repr, BEq, DecidableEq
 
+/-- Token が同じ種類であるかどうか判定する -/
+def Token.sameType (t1 t2 : Token) : Bool :=
+  match t1, t2 with
+  | .IDENT _, .IDENT _ => true
+  | .INT _, .INT _ => true
+  | _, _ => t1 = t2
+
 /-- `ILLEGAL` を初期値にする -/
 instance : Inhabited Token := ⟨Token.ILLEGAL⟩
 

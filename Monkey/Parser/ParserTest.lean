@@ -44,3 +44,5 @@ def testLetStatements : IO Unit := do
   for (id, stmt) in List.zip expectedId program do
     if ! (← testLetStatement stmt id) then
       break
+
+-- #eval testLetStatements
