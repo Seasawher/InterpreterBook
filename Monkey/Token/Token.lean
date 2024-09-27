@@ -109,7 +109,7 @@ instance : ToString Token where
 open Lean Token
 
 /-- 言語のキーワードを格納する辞書 -/
-def keywords : HashMap String Token :=
+def keywords : Std.HashMap String Token :=
   let list : List (String × Token) := [
     ("fn", FUNCTION),
     ("let", LET),
@@ -119,10 +119,10 @@ def keywords : HashMap String Token :=
     ("else", ELSE),
     ("return", RETURN),
   ]
-  HashMap.ofList list
+  Std.HashMap.ofList list
 
 /-- ユーザ定義の識別子なのか、言語のキーワードなのか分類する -/
 def LookupIdent (ident : String) : Token :=
-  match keywords.find? ident with
+  match keywords[ident]? with
   | some tok => tok
   | none => IDENT ident

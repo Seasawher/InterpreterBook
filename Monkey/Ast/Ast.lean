@@ -5,7 +5,7 @@ inductive Expression where
   /-- 識別子 -/
   | identifier (token : Token) (value : String) : Expression
 
-deriving DecidableEq
+deriving Repr, DecidableEq
 
 /-- Expression を文字列に変換する -/
 def Expression.tokenLiteral (e : Expression) : String :=
@@ -17,7 +17,12 @@ inductive Statement where
   /-- let 文 -/
   | letStmt (token : Token) (name : String) (value : Expression) : Statement
 
-deriving DecidableEq
+deriving Repr, DecidableEq
+
+instance : ToString Statement where
+  toString s := reprStr s
+
+#check Repr.reprPrec
 
 /-- Statement の ToString 関数に相当するもの -/
 def Statement.tokenLiteral (s : Statement) : String :=
@@ -33,12 +38,14 @@ inductive Node where
   | ofExpr (e : Expression) : Node
 
 /-- プログラムを文の集まりとして定義する -/
-def Program := List Statement
+abbrev Program := List Statement
 
-deriving DecidableEq
+-- deriving DecidableEq, Repr
 
 /-- Program の ToString 関数に相当するもの -/
 def Program.tokenLiteral (p : Program) : String :=
   match p with
   | [] => ""
   | p :: _ => p.tokenLiteral
+
+-- instance : ToString Program := inferInstance

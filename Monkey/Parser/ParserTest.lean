@@ -32,7 +32,7 @@ def testLetStatements : IO Unit := do
   let p := Parser.new l
 
   -- none だったときの処理を簡潔に書くことができる
-  let some program := p.parseProgram
+  let some program := p.parseProgram |>.fst
     | throw <| .userError s!"ParseProgram returned none"
 
   -- 入力の文はちょうど３つのはず
@@ -45,4 +45,4 @@ def testLetStatements : IO Unit := do
     if ! (← testLetStatement stmt id) then
       break
 
--- #eval testLetStatements
+#eval testLetStatements
