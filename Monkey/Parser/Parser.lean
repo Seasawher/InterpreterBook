@@ -1,5 +1,6 @@
 import Monkey.Ast.Ast
 import Monkey.Lexer.Lexer
+import Lean
 
 /-- 構文解析器 -/
 structure Parser where
@@ -41,31 +42,20 @@ def Parser.curTokenIs (p : Parser) (t : Token) : Bool :=
 def Parser.peekTokenIs (p : Parser) (t : Token) : Bool :=
   Token.sameType p.peekToken t
 
+open Lean Parser Term in
 /-- p の peekToken が指定されたトークンと種類が一致するか判定。一致した場合は次に進める -/
-def Parser.expectPeek (t : Token) : StateM Parser Bool := do
-  let p ← (get : StateM Parser Parser)
-  if ! p.peekTokenIs t then
-    return false
-
-  nextToken
-  return true
+macro "expectPeek " pat:term rest:doSeqItem* : doElem => do
+  `(doElem| do
+      let $pat := (← get).peekToken
+        | return none
+      nextToken
+      $rest*
+  )
 
 /-- let 文をパースする -/
 def Parser.parseLetStatement : StateM Parser (Option Statement) := do
-  -- TODO: なぜここは StateM モナドの中なのに、
-  -- `←` で `Bool × Parser` が取り出されてしまうのか？
-  -- `← get` だと `Parser` が取り出されるのに...
-  -- let detect ← p.expectPeek (Token.IDENT "")
-  -- Answer: `p.expectPeek` のように、`p` を状態として渡すのがよくない
-  if ! (← expectPeek (Token.IDENT "")) then
-    return none
-
-  -- これは IDENT になっているはずなので name を取り出す
-  let .IDENT name := (← get).curToken
-    | panic! "curToken is not IDENT"
-
-  if ! (← expectPeek (Token.ASSIGN)) then
-    return none
+  expectPeek .IDENT name
+  expectPeek .ASSIGN
 
   while ! (← get).curTokenIs (Token.SEMICOLON) do
     nextToken
