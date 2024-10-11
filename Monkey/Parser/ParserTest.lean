@@ -7,12 +7,13 @@ def testLetStatement (stmt : Statement) (expectedId : String) : IO Bool := do
   -- let Statement.letStmt token name val := stmt
 
   -- Statement に let 以外のものを増やすと将来的に動かなくなる
-  let .letStmt token actualId _val := stmt
+  let .letStmt actualId _val := stmt
+    | throw <| .userError s!"not expected statement. got={stmt}, expected=Stmt.letStmt"
 
-  -- LET が来ないとエラー
-  if token != Token.LET then
-    IO.eprintln s!"not LET. got={token}"
-    return false
+  -- -- LET が来ないとエラー
+  -- if token != Token.LET then
+  --   IO.eprintln s!"not LET. got={token}"
+  --   return false
 
   -- 期待される識別子と実際の識別子が一致するか
   if actualId != expectedId then
@@ -35,6 +36,8 @@ def testLetStatements : IO Unit := do
   let some program := p.parseProgram |>.fst
     | throw <| .userError s!"ParseProgram returned none"
 
+  IO.println s!"given program={program}"
+
   -- 入力の文はちょうど３つのはず
   if program.length != 3 then
     throw <| .userError s!"program.Statements does not contain 3 statements. got={program.length}"
@@ -43,6 +46,8 @@ def testLetStatements : IO Unit := do
   let expectedId := ["x", "y", "foobar"]
   for (id, stmt) in List.zip expectedId program do
     if ! (← testLetStatement stmt id) then
-      break
+      throw <| .userError s!"testLetStatement failed"
+
+  IO.println "ok!"
 
 #eval testLetStatements

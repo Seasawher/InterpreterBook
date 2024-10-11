@@ -15,7 +15,7 @@ structure Parser where
 
 /-- Parser を文字列に変換する -/
 def Parser.toString (p : Parser) : String :=
-  s!"Parser(curToken={p.curToken}, peekToken={p.peekToken})"
+  s!"⟨curToken={p.curToken}, peekToken={p.peekToken}⟩ : Parser"
 
 instance : ToString Parser where
   toString := Parser.toString
@@ -43,7 +43,7 @@ def Parser.peekTokenIs (p : Parser) (t : Token) : Bool :=
   Token.sameType p.peekToken t
 
 open Lean Parser Term in
-/-- p の peekToken が指定されたトークンと種類が一致するか判定。一致した場合は次に進める -/
+/-- p の peekToken が指定されたトークン `pat` と種類が一致するか判定。一致した場合は次に進める -/
 macro "expectPeek " pat:term rest:doSeqItem* : doElem => do
   `(doElem| do
       let $pat := (← get).peekToken
@@ -60,8 +60,8 @@ def Parser.parseLetStatement : StateM Parser (Option Statement) := do
   while ! (← get).curTokenIs (Token.SEMICOLON) do
     nextToken
 
-  let ident := Token.IDENT name
-  return Statement.letStmt (token := ident) name (Expression.identifier ident name)
+  -- let ident := Token.IDENT name
+  return Statement.letStmt name Expression.notImplemented
 
 /-- 一文をパースする -/
 def Parser.parseStatement : StateM Parser (Option Statement) := do
@@ -90,4 +90,4 @@ def Parser.parseProgram : StateM Parser (Option Program) := do
   let l := Lexer.new input
   let p := Parser.new l
 
-  p.parseProgram
+  ToString.toString (p.parseProgram |>.run |>.fst)
