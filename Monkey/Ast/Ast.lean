@@ -42,6 +42,7 @@ inductive Statement where
 
 deriving Repr, DecidableEq
 
+/-- Statement を文字列に変換する -/
 def Statement.toString (stmt: Statement) : String :=
   match stmt with
   | .letStmt name value => s!"let {name} = {value}"

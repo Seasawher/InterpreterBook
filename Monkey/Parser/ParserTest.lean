@@ -22,6 +22,16 @@ def testLetStatement (stmt : Statement) (expectedId : String) : IO Bool := do
 
   return true
 
+/-- Parser にエラーが一つでもあれば全部出力する -/
+def checkParserErrors (p : Parser) : IO Unit := do
+  if p.errors.isEmpty then
+    return
+
+  for err in p.errors do
+    IO.eprintln err
+
+  throw <| .userError "parser has errors"
+
 /-- 具体的な `let` 文に対する parser のテスト -/
 def testLetStatements : IO Unit := do
   let input := "
@@ -32,10 +42,10 @@ def testLetStatements : IO Unit := do
   let l := Lexer.new input
   let p := Parser.new l
 
-  -- none だったときの処理を簡潔に書くことができる
-  let some program := p.parseProgram |>.fst
-    | throw <| .userError s!"ParseProgram returned none"
+  let ⟨result, parser⟩ := p.parseProgram
+  checkParserErrors parser
 
+  let some program := result | IO.eprintln s!"ParseProgram returned none"
   IO.println s!"given program={program}"
 
   -- 入力の文はちょうど３つのはず
@@ -50,4 +60,13 @@ def testLetStatements : IO Unit := do
 
   IO.println "ok!"
 
+/- ## TODO:
+入力として以下のように複数のエラーが起こる文を与えたとき、
+```
+  let input := "
+    let x 5;
+    let = 10;
+    let foobar = 838383;"
+```
+エラーメッセージがなぜ一度しか表示されないのか？-/
 #eval testLetStatements
