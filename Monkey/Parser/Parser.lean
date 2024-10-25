@@ -54,7 +54,7 @@ def Parser.peekTokenIs (p : Parser) (t : Token) : Bool :=
 エラーメッセージを蓄積する処理 -/
 def Parser.peekError (expectedToken : String) : StateM Parser Unit := do
   let p ← get
-  set { p with errors := p.errors ++ [s!"expected next token to be {expectedToken}, got {p.peekToken} instead"] }
+  set { p with errors := p.errors ++ [s!"expected next token to be {expectedToken.trim}, got {p.peekToken} instead"] }
 
 open Lean Parser Term in
 /-- p の peekToken が指定されたトークン `pat` と種類が一致するか判定。一致した場合は次に進める -/
@@ -89,7 +89,8 @@ def Parser.parseProgram : StateM Parser (Option Program) := do
   let mut program : Program := []
 
   while (← get).curToken != Token.EOF do
-    let some stmt ← parseStatement | return none
+    let some stmt ← parseStatement
+      | nextToken; continue
     program := stmt :: program
     nextToken
 

@@ -3,17 +3,8 @@ import Monkey.Parser.Parser
 
 /-- 一般的な `let` 文に対する parser のテスト -/
 def testLetStatement (stmt : Statement) (expectedId : String) : IO Bool := do
-  -- なぜか failed to infer binder type エラーになる
-  -- let Statement.letStmt token name val := stmt
-
-  -- Statement に let 以外のものを増やすと将来的に動かなくなる
   let .letStmt actualId _val := stmt
     | throw <| .userError s!"not expected statement. got={stmt}, expected=Stmt.letStmt"
-
-  -- -- LET が来ないとエラー
-  -- if token != Token.LET then
-  --   IO.eprintln s!"not LET. got={token}"
-  --   return false
 
   -- 期待される識別子と実際の識別子が一致するか
   if actualId != expectedId then
@@ -60,13 +51,4 @@ def testLetStatements : IO Unit := do
 
   IO.println "ok!"
 
-/- ## TODO:
-入力として以下のように複数のエラーが起こる文を与えたとき、
-```
-  let input := "
-    let x 5;
-    let = 10;
-    let foobar = 838383;"
-```
-エラーメッセージがなぜ一度しか表示されないのか？-/
 #eval testLetStatements

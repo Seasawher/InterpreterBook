@@ -15,7 +15,6 @@ def testNextToken (input : String) (expected : Array Token) : IO Unit := do
     if tok = EOF then break
 
   if actualTokens.size ≠ expected.size then
-    dbg_trace actualTokens
     throw <| .userError s!"tests failed: - token count wrong. expected={expected.size}, got={actualTokens.size}"
 
   let testCases := Array.zip expected actualTokens
