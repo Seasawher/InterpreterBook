@@ -52,3 +52,31 @@ def testLetStatements : IO Unit := do
   IO.println "ok!"
 
 #eval testLetStatements
+
+
+/-- 具体的な return 文に対するテスト -/
+def testReturnStatements : IO Unit := do
+  let input := "
+    return 5;
+    return 10;
+    return 993322;"
+
+  let l := Lexer.new input
+  let p := Parser.new l
+
+  let ⟨result, parser⟩ := p.parseProgram
+  checkParserErrors parser
+
+  let some program := result | IO.eprintln s!"ParseProgram returned none"
+  IO.println s!"given program={program}"
+
+  -- 入力の文はちょうど３つのはず
+  if program.length != 3 then
+    throw <| .userError s!"program.Statements does not contain 3 statements. got={program.length}"
+
+  -- return 文だけで構成されていることを確かめる
+  for stmt in program do
+    let .returnStmt _val := stmt
+      | throw <| .userError s!"not expected statement. got={stmt}, expected=Stmt.returnStmt"
+
+#eval testReturnStatements

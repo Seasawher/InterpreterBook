@@ -78,10 +78,17 @@ def Parser.parseLetStatement : StateM Parser (Option Statement) := do
 
   return Statement.letStmt name Expression.notImplemented
 
+/-- return 文をパースする -/
+def Parser.parseReturnStatement : StateM Parser (Option Statement) := do
+  while ! (← get).curTokenIs (Token.SEMICOLON) do
+    nextToken
+  return Statement.returnStmt Expression.notImplemented
+
 /-- 一文をパースする -/
 def Parser.parseStatement : StateM Parser (Option Statement) := do
   match (← get).curToken with
   | .LET => parseLetStatement
+  | .RETURN => parseReturnStatement
   | _ => return none
 
 /-- プログラムをパースする -/
