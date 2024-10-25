@@ -26,7 +26,7 @@ instance : ToString Expression where
   toString e := e.toString
 
 /-- Expression を文字列に変換する -/
-def Expression.tokenLiteral (e : Expression) : String :=
+def Expression.tokenLiteral (_e : Expression) : String :=
   -- match e with
   -- | .identifier token _ => s!"{token}"
   -- | .notImplemented => default
@@ -37,6 +37,9 @@ inductive Statement where
   /-- let 文 -/
   | letStmt (name : String) (value : Expression) : Statement
 
+  /-- return 文 -/
+  | returnStmt (returnValue : Expression) : Statement
+
   /-- Statement の未実装の部分を表す -/
   | notImplemented
 
@@ -46,13 +49,15 @@ deriving Repr, DecidableEq
 def Statement.toString (stmt: Statement) : String :=
   match stmt with
   | .letStmt name value => s!"let {name} = {value}"
+  | .returnStmt returnValue => s!"return {returnValue}"
   | .notImplemented => "notImplemented"
 
 /-- Repr インスタンスから ToString インスタンスを生成する -/
 instance : ToString Statement where
   toString s := s.toString
 
-def Statement.tokenLiteral (s : Statement) : String :=
+/-- Statement を文字列に変換する -/
+def Statement.tokenLiteral (_s : Statement) : String :=
   -- match s with
   -- | .letStmt token _ _ => s!"{token}"
   -- | .notImplemented => default
@@ -70,7 +75,7 @@ inductive Node where
 abbrev Program := List Statement
 
 /-- Program の ToString 関数に相当するもの -/
-def Program.tokenLiteral (p : Program) : String :=
+def Program.tokenLiteral (_p : Program) : String :=
   -- match p with
   -- | [] => ""
   -- | p :: _ => p.tokenLiteral
