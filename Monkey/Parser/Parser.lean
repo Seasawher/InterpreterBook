@@ -2,6 +2,12 @@ import Monkey.Ast.Ast
 import Monkey.Lexer.Lexer
 import Lean
 
+/-- 前置構文解析関数 -/
+def PrefixParseFn := Unit → Expression
+
+/-- 中値構文解析関数 -/
+def InfixParseFn := Expression → Expression
+
 /-- 構文解析器 -/
 structure Parser where
   /-- レキサー -/
@@ -16,6 +22,12 @@ structure Parser where
   /-- 構文解析エラー -/
   errors : List String
 
+  /-- トークンタイプに応じて前置構文解析器を取得する -/
+  prefixParseFns : Std.HashMap Token PrefixParseFn
+
+  /-- トークンタイプに応じて中値構文解析器を取得する -/
+  infixParseFns : Std.HashMap Token InfixParseFn
+
 /-- Parser を文字列に変換する -/
 def Parser.toString (p : Parser) : String :=
   s!"⟨curToken={p.curToken}, peekToken={p.peekToken}⟩ : Parser"
@@ -27,7 +39,7 @@ instance : ToString Parser where
 def Parser.nextToken : StateM Parser PUnit := do
   let p ← get
   let ⟨newToken, newLexer⟩ := p.l.nextToken
-  let newParser : Parser := {
+  let newParser : Parser := { p with
     l := newLexer,
     curToken := p.peekToken,
     peekToken := newToken,
@@ -40,7 +52,7 @@ def Parser.new (l : Lexer) : Parser :=
   -- Id モナドは無言で取り出せる
   let (curToken, l') := l.nextToken
   let (peekToken, l'') := l'.nextToken
-  { l := l'', curToken, peekToken, errors := []}
+  { l := l'', curToken, peekToken, errors := [], prefixParseFns := ∅, infixParseFns := ∅ }
 
 /-- p の curToken が指定されたトークンと種類が一致するか -/
 def Parser.curTokenIs (p : Parser) (t : Token) : Bool :=

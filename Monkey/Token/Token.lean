@@ -60,7 +60,7 @@ inductive Token where
   | ELSE
   /-- RETURN キーワード -/
   | RETURN
-deriving Repr, BEq, DecidableEq
+deriving Repr, BEq, DecidableEq, Hashable
 
 /-- Token が同じ種類であるかどうか判定する -/
 def Token.sameType (t1 t2 : Token) : Bool :=
