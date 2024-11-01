@@ -25,13 +25,6 @@ def Expression.toString (e : Expression) : String :=
 instance : ToString Expression where
   toString e := e.toString
 
-/-- Expression を文字列に変換する -/
-def Expression.tokenLiteral (_e : Expression) : String :=
-  -- match e with
-  -- | .identifier token _ => s!"{token}"
-  -- | .notImplemented => default
-  "Expression.tokenLiteral is not implemented"
-
 /-- 文。本文とは異なる実装を採用しており、`statementNode()` に相当するものは不要。-/
 inductive Statement where
   /-- let 文 -/
@@ -39,6 +32,9 @@ inductive Statement where
 
   /-- return 文 -/
   | returnStmt (returnValue : Expression) : Statement
+
+  /-- 式文。式だけからなる行を持たせるために必要 -/
+  | exprStmt (expr : Expression) : Statement
 
   /-- Statement の未実装の部分を表す -/
   | notImplemented
@@ -50,18 +46,12 @@ def Statement.toString (stmt: Statement) : String :=
   match stmt with
   | .letStmt name value => s!"let {name} = {value}"
   | .returnStmt returnValue => s!"return {returnValue}"
+  | .exprStmt expr => s!"{expr}"
   | .notImplemented => "notImplemented"
 
 /-- Repr インスタンスから ToString インスタンスを生成する -/
 instance : ToString Statement where
   toString s := s.toString
-
-/-- Statement を文字列に変換する -/
-def Statement.tokenLiteral (_s : Statement) : String :=
-  -- match s with
-  -- | .letStmt token _ _ => s!"{token}"
-  -- | .notImplemented => default
-  "Statement.tokenLiteral is not implemented"
 
 /-- AST のノード -/
 inductive Node where
@@ -71,12 +61,11 @@ inductive Node where
   /-- 式 -/
   | ofExpr (e : Expression) : Node
 
-/-- プログラムを文の集まりとして定義する -/
+/-- プログラムを文の集まりとして定義する。AST に相当する。-/
 abbrev Program := List Statement
 
-/-- Program の ToString 関数に相当するもの -/
-def Program.tokenLiteral (_p : Program) : String :=
-  -- match p with
-  -- | [] => ""
-  -- | p :: _ => p.tokenLiteral
-  "Program.tokenLiteral is not implemented"
+/-- `;` と改行で区切ってプログラムを表示する -/
+instance : ToString Program where
+  toString p := String.intercalate "\n" <| p.map (fun x => Statement.toString x ++ ";")
+
+#eval toString ([Statement.letStmt "myVar" Expression.notImplemented] : Program)
