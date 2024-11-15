@@ -42,7 +42,11 @@ inductive Precedence where
 
 export Precedence (LOWEST EQUALS LESSGREATER SUM PRODUCT PREFIX CALL)
 
--- #eval Ord.compare CALL PREFIX
+instance : LE Precedence where
+  le a b := Ord.compare a b ≠ Ordering.gt
+
+instance : LT Precedence where
+  lt a b := Ord.compare a b = Ordering.lt
 
 /-- トークンタイプに応じて前置構文解析器を取得する -/
 def prefixParseFns : Token → PrefixParseFn := sorry
