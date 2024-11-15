@@ -22,11 +22,33 @@ structure Parser where
   /-- 構文解析エラー -/
   errors : List String
 
-  /-- トークンタイプに応じて前置構文解析器を取得する -/
-  prefixParseFns : Std.HashMap Token PrefixParseFn
+/-- パースの優先順位 -/
+inductive Precedence where
+  /-- 最低の優先順位 -/
+  | LOWEST
+  /-- 等号と同じ優先順位 -/
+  | EQUALS
+  /-- 不等号と同じ優先順位 -/
+  | LESSGREATER
+  /-- + と同じ優先順位 -/
+  | SUM
+  /-- * と同じ優先順位 -/
+  | PRODUCT
+  /-- `-` や `!` と同じ優先順位 -/
+  | PREFIX
+  /-- 関数呼び出しと同じ優先順位 -/
+  | CALL
+  deriving Ord
 
-  /-- トークンタイプに応じて中値構文解析器を取得する -/
-  infixParseFns : Std.HashMap Token InfixParseFn
+export Precedence (LOWEST EQUALS LESSGREATER SUM PRODUCT PREFIX CALL)
+
+-- #eval Ord.compare CALL PREFIX
+
+/-- トークンタイプに応じて前置構文解析器を取得する -/
+def prefixParseFns : Token → PrefixParseFn := sorry
+
+/-- トークンタイプに応じて中値構文解析器を取得する -/
+def infixParseFns : Token → InfixParseFn := sorry
 
 /-- Parser を文字列に変換する -/
 def Parser.toString (p : Parser) : String :=
@@ -52,7 +74,7 @@ def Parser.new (l : Lexer) : Parser :=
   -- Id モナドは無言で取り出せる
   let (curToken, l') := l.nextToken
   let (peekToken, l'') := l'.nextToken
-  { l := l'', curToken, peekToken, errors := [], prefixParseFns := ∅, infixParseFns := ∅ }
+  { l := l'', curToken, peekToken, errors := []}
 
 /-- p の curToken が指定されたトークンと種類が一致するか -/
 def Parser.curTokenIs (p : Parser) (t : Token) : Bool :=
@@ -96,12 +118,19 @@ def Parser.parseReturnStatement : StateM Parser (Option Statement) := do
     nextToken
   return Statement.returnStmt Expression.notImplemented
 
+/-- 式文をパースする -/
+def Parser.parseExpressionStatement : StateM Parser (Option Statement) := do
+  let stmt := Statement.exprStmt Expression.notImplemented
+  if (← get).peekTokenIs (Token.SEMICOLON) then
+    nextToken
+  return stmt
+
 /-- 一文をパースする -/
 def Parser.parseStatement : StateM Parser (Option Statement) := do
   match (← get).curToken with
   | .LET => parseLetStatement
   | .RETURN => parseReturnStatement
-  | _ => return none
+  | _ => parseExpressionStatement
 
 /-- プログラムをパースする -/
 def Parser.parseProgram : StateM Parser (Option Program) := do

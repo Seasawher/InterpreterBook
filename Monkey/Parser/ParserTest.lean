@@ -80,3 +80,30 @@ def testReturnStatements : IO Unit := do
       | throw <| .userError s!"not expected statement. got={stmt}, expected=Stmt.returnStmt"
 
 #eval testReturnStatements
+
+
+/-- 一般的な識別子に対するテスト -/
+def testIdentifierExpression : IO Unit := do
+  let input := "foobar;"
+
+  let l := Lexer.new input
+  let p := Parser.new l
+  let ⟨result, parser⟩ := p.parseProgram
+  checkParserErrors parser
+
+  let some program := result
+    | IO.eprintln s!"ParseProgram returned none"
+
+  if program.length != 1 then
+    throw <| .userError s!"program length is not equal to 1. got={program.length}"
+
+  let [Statement.exprStmt stmt] := program
+    | throw <| .userError s!"Statement.exprStmt is expected. got={program}"
+
+  let Expression.identifier id _ := stmt
+    | throw <| .userError s!"Expression.identifier is expected. got={stmt}"
+
+  if id != Token.IDENT "foobar" then
+    throw <| .userError s!"ident is expected to be 'foobar'. got={id}"
+
+-- #eval testIdentifierExpression
