@@ -9,7 +9,7 @@ macro "sorry_proof" : tactic => `(tactic| apply sorryAxForProof)
 /-- 式 -/
 inductive Expression where
   /-- 識別子 -/
-  | identifier (token : Token) (h : ∃ name, token = .IDENT name := by decide) : Expression
+  | identifier (name : String) : Expression
 
   /-- `Expression` の未実装の部分を表す -/
   | notImplemented
@@ -19,7 +19,7 @@ deriving Repr, DecidableEq
 /-- Expression を文字列に変換する -/
 def Expression.toString (e : Expression) : String :=
   match e with
-  | .identifier token _ => s!"{token}"
+  | .identifier name => s!"{name}"
   | .notImplemented => "notImplemented"
 
 instance : ToString Expression where

@@ -2,11 +2,6 @@ import Monkey.Ast.Ast
 import Monkey.Lexer.Lexer
 import Lean
 
-/-- 前置構文解析関数 -/
-def PrefixParseFn := Unit → Expression
-
-/-- 中値構文解析関数 -/
-def InfixParseFn := Expression → Expression
 
 /-- 構文解析器 -/
 structure Parser where
@@ -21,6 +16,12 @@ structure Parser where
 
   /-- 構文解析エラー -/
   errors : List String
+
+/-- 前置構文解析関数 -/
+def PrefixParseFn := StateM Parser <| Option Expression
+
+/-- 中値構文解析関数 -/
+def InfixParseFn := Expression → (StateM Parser <| Option Expression)
 
 /-- パースの優先順位 -/
 inductive Precedence where
@@ -49,7 +50,9 @@ instance : LT Precedence where
   lt a b := Ord.compare a b = Ordering.lt
 
 /-- トークンタイプに応じて前置構文解析器を取得する -/
-def prefixParseFns : Token → PrefixParseFn := sorry
+def prefixParseFns : Token → PrefixParseFn
+  | .IDENT x => return Expression.identifier x
+  | _ => return none
 
 /-- トークンタイプに応じて中値構文解析器を取得する -/
 def infixParseFns : Token → InfixParseFn := sorry
@@ -106,6 +109,16 @@ macro "expectPeek " pat:term rest:doSeqItem* : doElem => do
     $rest*
   )
 
+/-- 式をパースする -/
+def Parser.parseExpression (precedence : Precedence) : StateM Parser <| Option Expression := do
+  let prefixFn := prefixParseFns (← get).curToken
+
+  -- パースが失敗したら `none` を返す
+  let some leftExp ← prefixFn
+    | return none
+
+  return leftExp
+
 /-- let 文をパースする -/
 def Parser.parseLetStatement : StateM Parser (Option Statement) := do
   expectPeek .IDENT name
@@ -124,7 +137,9 @@ def Parser.parseReturnStatement : StateM Parser (Option Statement) := do
 
 /-- 式文をパースする -/
 def Parser.parseExpressionStatement : StateM Parser (Option Statement) := do
-  let stmt := Statement.exprStmt Expression.notImplemented
+  let some expr ← parseExpression LOWEST
+    | return none
+  let stmt := Statement.exprStmt expr
   if (← get).peekTokenIs (Token.SEMICOLON) then
     nextToken
   return stmt

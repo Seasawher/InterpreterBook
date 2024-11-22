@@ -100,10 +100,10 @@ def testIdentifierExpression : IO Unit := do
   let [Statement.exprStmt stmt] := program
     | throw <| .userError s!"Statement.exprStmt is expected. got={program}"
 
-  let Expression.identifier id _ := stmt
+  let Expression.identifier id := stmt
     | throw <| .userError s!"Expression.identifier is expected. got={stmt}"
 
-  if id != Token.IDENT "foobar" then
+  if id != "foobar" then
     throw <| .userError s!"ident is expected to be 'foobar'. got={id}"
 
--- #eval testIdentifierExpression
+#eval testIdentifierExpression
