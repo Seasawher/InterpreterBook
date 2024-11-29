@@ -11,6 +11,12 @@ inductive Expression where
   /-- 識別子 -/
   | identifier (name : String) : Expression
 
+  /-- 整数リテラル -/
+  | integerLiteral (value : Int) : Expression
+
+  /-- 前置演算子 -/
+  | prefix (operator : Token) (right : Expression) : Expression
+
   /-- `Expression` の未実装の部分を表す -/
   | notImplemented
 
@@ -20,6 +26,8 @@ deriving Repr, DecidableEq
 def Expression.toString (e : Expression) : String :=
   match e with
   | .identifier name => s!"{name}"
+  | .integerLiteral value => s!"{value}"
+  | .prefix operator right => s!"({operator} {Expression.toString right})"
   | .notImplemented => "notImplemented"
 
 instance : ToString Expression where

@@ -49,14 +49,6 @@ instance : LE Precedence where
 instance : LT Precedence where
   lt a b := Ord.compare a b = Ordering.lt
 
-/-- トークンタイプに応じて前置構文解析器を取得する -/
-def prefixParseFns : Token → PrefixParseFn
-  | .IDENT x => return Expression.identifier x
-  | _ => return none
-
-/-- トークンタイプに応じて中値構文解析器を取得する -/
-def infixParseFns : Token → InfixParseFn := sorry
-
 /-- Parser を文字列に変換する -/
 def Parser.toString (p : Parser) : String :=
   s!"⟨curToken={p.curToken}, peekToken={p.peekToken}⟩ : Parser"
@@ -75,6 +67,34 @@ def Parser.nextToken : StateM Parser PUnit := do
     errors := p.errors
   }
   set newParser
+
+/-- トークンタイプに応じて前置構文解析器を取得する -/
+def prefixParseFns : Token → PrefixParseFn
+  | .IDENT x => return Expression.identifier x
+  | .INT value => return Expression.integerLiteral value
+  | .BANG => do
+    Parser.nextToken
+    -- let some right ← Parser.parseExpression _
+    --   | return none
+    return Expression.notImplemented
+  | _ => do
+    let p ← get
+    let errmsg := s!"no prefix parse function for {p.curToken} found"
+    set <| { p with errors := p.errors ++ [errmsg]}
+    return none
+
+/-- トークンタイプに応じて中値構文解析器を取得する -/
+def infixParseFns : Token → InfixParseFn := sorry
+
+/-- 式をパースする -/
+def Parser.parseExpression (precedence : Precedence) : StateM Parser <| Option Expression := do
+  let prefixFn := prefixParseFns (← get).curToken
+
+  -- パースが失敗したら `none` を返す
+  let some leftExp ← prefixFn
+    | return none
+
+  return leftExp
 
 /-- 新しくパーサを作る -/
 def Parser.new (l : Lexer) : Parser :=
@@ -109,15 +129,6 @@ macro "expectPeek " pat:term rest:doSeqItem* : doElem => do
     $rest*
   )
 
-/-- 式をパースする -/
-def Parser.parseExpression (precedence : Precedence) : StateM Parser <| Option Expression := do
-  let prefixFn := prefixParseFns (← get).curToken
-
-  -- パースが失敗したら `none` を返す
-  let some leftExp ← prefixFn
-    | return none
-
-  return leftExp
 
 /-- let 文をパースする -/
 def Parser.parseLetStatement : StateM Parser (Option Statement) := do
