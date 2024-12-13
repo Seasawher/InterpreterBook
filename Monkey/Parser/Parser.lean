@@ -31,9 +31,9 @@ inductive Precedence where
   | EQUALS
   /-- 不等号と同じ優先順位 -/
   | LESSGREATER
-  /-- + と同じ優先順位 -/
+  /-- `+` と同じ優先順位 -/
   | SUM
-  /-- * と同じ優先順位 -/
+  /-- `*` と同じ優先順位 -/
   | PRODUCT
   /-- `-` や `!` と同じ優先順位 -/
   | PREFIX
