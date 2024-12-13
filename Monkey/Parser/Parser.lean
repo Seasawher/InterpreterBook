@@ -39,7 +39,7 @@ inductive Precedence where
   | PREFIX
   /-- 関数呼び出しと同じ優先順位 -/
   | CALL
-  deriving Ord
+  deriving Ord, Inhabited
 
 export Precedence (LOWEST EQUALS LESSGREATER SUM PRODUCT PREFIX CALL)
 
@@ -49,8 +49,19 @@ instance : LE Precedence where
 instance : LT Precedence where
   lt a b := Ord.compare a b = Ordering.lt
 
-/-- Parser を文字列に変換する -/
-def Parser.toString (p : Parser) : String :=
+/-- 各トークンの優先順位 -/
+def Token.precedence : Token → Precedence
+  | .EQ => EQUALS
+  | .NOT_EQ => EQUALS
+  | .LT => LESSGREATER
+  | .GT => LESSGREATER
+  | .PLUS => SUM
+  | .MINUS => SUM
+  | .SLASH => PRODUCT
+  | .ASTERISK => PRODUCT
+  | _ => panic! "not implemented precedence"
+
+private def Parser.toString (p : Parser) : String :=
   s!"⟨curToken={p.curToken}, peekToken={p.peekToken}⟩ : Parser"
 
 instance : ToString Parser where
@@ -68,33 +79,62 @@ def Parser.nextToken : StateM Parser PUnit := do
   }
   set newParser
 
+mutual
+
 /-- トークンタイプに応じて前置構文解析器を取得する -/
-def prefixParseFns : Token → PrefixParseFn
+partial def prefixParseFns : Token → PrefixParseFn
   | .IDENT x => return Expression.identifier x
   | .INT value => return Expression.integerLiteral value
-  | .BANG => do
+  | tkn@.BANG | tkn@.MINUS => do
     Parser.nextToken
-    -- let some right ← Parser.parseExpression _
-    --   | return none
-    return Expression.notImplemented
+    let some right ← Parser.parseExpression PREFIX
+      | return none
+    let expr := Expression.prefix tkn right
+    return expr
   | _ => do
     let p ← get
     let errmsg := s!"no prefix parse function for {p.curToken} found"
     set <| { p with errors := p.errors ++ [errmsg]}
     return none
 
+/-- 中置演算子式をパースする -/
+partial def Parser.parseInfixExpression (left : Expression) : StateM Parser <| Option Expression := do
+  let oldParser ← get
+  let precedence := oldParser.curToken.precedence
+  Parser.nextToken
+  let some right ← Parser.parseExpression precedence
+    | return none
+  let expression := Expression.infix left oldParser.curToken right
+  return expression
+
 /-- トークンタイプに応じて中値構文解析器を取得する -/
-def infixParseFns : Token → InfixParseFn := sorry
+partial def infixParseFns : Token → InfixParseFn
+  | .PLUS | .MINUS | .SLASH | .ASTERISK
+  | .EQ | .NOT_EQ | .LT | .GT => Parser.parseInfixExpression
+  | _ => fun left => do
+    let p ← get
+    let errmsg := s!"no infix parse function for {p.curToken} found"
+    set <| { p with errors := p.errors ++ [errmsg]}
+    return left
 
 /-- 式をパースする -/
-def Parser.parseExpression (precedence : Precedence) : StateM Parser <| Option Expression := do
+partial def Parser.parseExpression (precedence : Precedence) : StateM Parser <| Option Expression := do
   let prefixFn := prefixParseFns (← get).curToken
 
   -- パースが失敗したら `none` を返す
-  let some leftExp ← prefixFn
+  let mut some leftExp ← prefixFn
     | return none
 
+  while (← get).peekToken != Token.SEMICOLON && precedence < (← get).peekToken.precedence do
+    let infixParseFn := infixParseFns (← get).peekToken
+    Parser.nextToken
+    let some leftExp' ← infixParseFn leftExp
+      | return none
+    leftExp := leftExp'
+
   return leftExp
+
+end
 
 /-- 新しくパーサを作る -/
 def Parser.new (l : Lexer) : Parser :=

@@ -170,4 +170,58 @@ def testParsingPrefixExpressions : IO Unit := do
     if value != testCase.integer then
       throw <| .userError s!"value is expected to be {testCase.integer}. got={value}"
 
--- #eval testParsingPrefixExpressions
+#eval testParsingPrefixExpressions
+
+private structure InfixTestCase where
+  input : String
+  leftValue : Int
+  operator : Token
+  rightValue : Int
+
+/-- 中置演算子式のパースのテスト -/
+def testParsingInfixExpressions : IO Unit := do
+  let infixTests : Array InfixTestCase := #[
+    { input := "5 + 5;", leftValue := 5, operator := .PLUS, rightValue := 5 },
+    { input := "5 - 5;", leftValue := 5, operator := .MINUS, rightValue := 5 },
+    { input := "5 * 5;", leftValue := 5, operator := .ASTERISK, rightValue := 5 },
+    { input := "5 / 5;", leftValue := 5, operator := .SLASH, rightValue := 5 },
+    { input := "5 > 5;", leftValue := 5, operator := .GT, rightValue := 5 },
+    { input := "5 < 5;", leftValue := 5, operator := .LT, rightValue := 5 },
+    { input := "5 == 5;", leftValue := 5, operator := .EQ, rightValue := 5 },
+    { input := "5 != 5;", leftValue := 5, operator := .NOT_EQ, rightValue := 5 }
+  ]
+
+  for testCase in infixTests do
+    let l := Lexer.new testCase.input
+    let p := Parser.new l
+    let ⟨result, parser⟩ := p.parseProgram
+    checkParserErrors parser
+
+    let some program := result
+      | IO.eprintln s!"ParseProgram returned none"
+
+    if program.length != 1 then
+      throw <| .userError s!"program.Statements does not contain 1 statement. got={program.length}"
+
+    let [Statement.exprStmt stmt] := program
+      | throw <| .userError s!"Statement.exprStmt is expected. got={program}"
+
+    let Expression.infix left operator right := stmt
+      | throw <| .userError s!"Expression.infix is expected. got={stmt}"
+
+    let Expression.integerLiteral leftValue := left
+      | throw <| .userError s!"Expression.integerLiteral is expected. got={left}"
+
+    let Expression.integerLiteral rightValue := right
+      | throw <| .userError s!"Expression.integerLiteral is expected. got={right}"
+
+    if operator != testCase.operator then
+      throw <| .userError s!"operator is expected to be {testCase.operator}. got={operator}"
+
+    if leftValue != testCase.leftValue then
+      throw <| .userError s!"leftValue is expected to be {testCase.leftValue}. got={leftValue}"
+
+    if rightValue != testCase.rightValue then
+      throw <| .userError s!"rightValue is expected to be {testCase.rightValue}. got={rightValue}"
+
+#eval testParsingInfixExpressions

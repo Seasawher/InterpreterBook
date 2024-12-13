@@ -17,6 +17,9 @@ inductive Expression where
   /-- 前置演算子 -/
   | prefix (operator : Token) (right : Expression) : Expression
 
+  /-- 中置演算子 -/
+  | infix (left : Expression) (operator : Token) (right : Expression) : Expression
+
   /-- `Expression` の未実装の部分を表す -/
   | notImplemented
 
@@ -28,6 +31,7 @@ def Expression.toString (e : Expression) : String :=
   | .identifier name => s!"{name}"
   | .integerLiteral value => s!"{value}"
   | .prefix operator right => s!"({operator} {Expression.toString right})"
+  | .infix left operator right => s!"({Expression.toString left} {operator} {Expression.toString right})"
   | .notImplemented => "notImplemented"
 
 instance : ToString Expression where
