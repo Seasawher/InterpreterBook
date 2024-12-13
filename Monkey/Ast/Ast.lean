@@ -1,11 +1,5 @@
 import Monkey.Token.Token
 
-/-- 証明に対する sorryAx -/
-axiom sorryAxForProof {P : Prop} : P
-
-/-- 証明を省略するため専用の sorry -/
-macro "sorry_proof" : tactic => `(tactic| apply sorryAxForProof)
-
 /-- 式 -/
 inductive Expression where
   /-- 識別子 -/
