@@ -47,15 +47,13 @@ inductive Statement where
 
 deriving Repr, DecidableEq
 
-/-- Statement を文字列に変換する -/
-def Statement.toString (stmt: Statement) : String :=
+private def Statement.toString (stmt: Statement) : String :=
   match stmt with
   | .letStmt name value => s!"let {name} = {value}"
   | .returnStmt returnValue => s!"return {returnValue}"
   | .exprStmt expr => s!"{expr}"
   | .notImplemented => "notImplemented"
 
-/-- Repr インスタンスから ToString インスタンスを生成する -/
 instance : ToString Statement where
   toString s := s.toString
 

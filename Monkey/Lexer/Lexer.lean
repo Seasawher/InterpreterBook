@@ -121,7 +121,7 @@ def nextToken : StateM Lexer Token := do
     | _ => ILLEGAL
   if l.ch.isLetter then
     let literal ← readIdentifier
-    let token := LookupIdent literal
+    let token := lookupIdent literal
     return token
   else if l.ch.isDigit then
     let literal ← readNumber

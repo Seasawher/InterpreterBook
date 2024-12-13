@@ -72,8 +72,7 @@ def Token.sameType (t1 t2 : Token) : Bool :=
 /-- `ILLEGAL` を初期値にする -/
 instance : Inhabited Token := ⟨Token.ILLEGAL⟩
 
-/-- Token を文字列に変換する -/
-def Token.toString (t : Token) : String :=
+private def Token.toString (t : Token) : String :=
   match t with
   | .ILLEGAL => "ILLEGAL"
   | .EOF => "EOF"
@@ -121,8 +120,9 @@ def keywords : Std.HashMap String Token :=
   ]
   Std.HashMap.ofList list
 
-/-- ユーザ定義の識別子なのか、言語のキーワードなのか分類する -/
-def LookupIdent (ident : String) : Token :=
+/-- 文字列をトークンに変換する。
+その過程でユーザ定義の識別子なのか、言語のキーワードなのか見分ける作業を行う。-/
+def lookupIdent (ident : String) : Token :=
   match keywords[ident]? with
   | some tok => tok
   | none => IDENT ident
