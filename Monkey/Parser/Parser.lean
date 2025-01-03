@@ -43,11 +43,7 @@ inductive Precedence where
 
 export Precedence (LOWEST EQUALS LESSGREATER SUM PRODUCT PREFIX CALL)
 
-instance : LE Precedence where
-  le a b := Ord.compare a b ≠ Ordering.gt
-
-instance : LT Precedence where
-  lt a b := Ord.compare a b = Ordering.lt
+attribute [instance] ltOfOrd leOfOrd
 
 /-- 各トークンの優先順位 -/
 def Token.precedence : Token → Precedence
