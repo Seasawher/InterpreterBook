@@ -231,3 +231,42 @@ def testParsingInfixExpressions : IO Unit := do
   IO.println "ok!"
 
 #eval testParsingInfixExpressions
+
+private structure PrecedenceTestCase where
+  input : String
+  expected : String
+
+/-- AST に演算子の優先度が正しく反映されていることの確認 -/
+def testOperatorPrecedenceParsing : IO Unit := do
+  let tests : Array PrecedenceTestCase := #[
+    { input := "-a * b", expected := "((- a) * b)" },
+    { input := "!-a", expected := "(! (- a))" },
+    { input := "a + b + c", expected := "((a + b) + c)" },
+    { input := "a + b - c", expected := "((a + b) - c)" },
+    { input := "a * b * c", expected := "((a * b) * c)" },
+    { input := "a * b / c", expected := "((a * b) / c)" },
+    { input := "a + b / c", expected := "(a + (b / c))" },
+    { input := "a + b * c + d / e - f", expected := "(((a + (b * c)) + (d / e)) - f)" },
+    { input := "3 + 4; -5 * 5", expected := "(3 + 4)((- 5) * 5)" },
+    { input := "5 > 4 == 3 < 4", expected := "((5 > 4) == (3 < 4))" },
+    { input := "5 < 4 != 3 > 4", expected := "((5 < 4) != (3 > 4))" },
+    { input := "3 + 4 * 5 == 3 * 1 + 4 * 5", expected := "((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))" }
+  ]
+
+  for testCase in tests do
+    let l := Lexer.new testCase.input
+    let p := Parser.new l
+    let ⟨result, parser⟩ := p.parseProgram
+    checkParserErrors parser
+
+    let some program := result
+      | IO.eprintln s!"ParseProgram returned none"
+
+    let actual := ToString.toString program
+    if actual != testCase.expected then
+      throw <| .userError s!"not expected. got={actual}, expected={testCase.expected}"
+
+  IO.println "ok!"
+
+#eval testOperatorPrecedenceParsing
+

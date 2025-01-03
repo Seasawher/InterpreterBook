@@ -55,7 +55,7 @@ def Token.precedence : Token → Precedence
   | .MINUS => SUM
   | .SLASH => PRODUCT
   | .ASTERISK => PRODUCT
-  | _ => panic! "not implemented precedence"
+  | _ => LOWEST
 
 private def Parser.toString (p : Parser) : String :=
   s!"⟨curToken={p.curToken}, peekToken={p.peekToken}⟩ : Parser"

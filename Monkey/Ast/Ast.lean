@@ -70,6 +70,11 @@ abbrev Program := List Statement
 
 /-- `;` と改行で区切ってプログラムを表示する -/
 instance : ToString Program where
-  toString p := String.intercalate "\n" <| p.map (fun x => Statement.toString x ++ ";")
+  toString p := p.map Statement.toString |>.foldl (· ++ ·) ""
+
+private def «-a * b» : Program :=
+  [Statement.exprStmt (Expression.infix (Expression.prefix Token.MINUS (Expression.identifier "a")) Token.ASTERISK (Expression.identifier "b"))]
+
+#eval toString «-a * b»
 
 #eval toString ([Statement.letStmt "myVar" Expression.notImplemented] : Program)
