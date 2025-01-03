@@ -68,7 +68,6 @@ inductive Node where
 /-- プログラムを文の集まりとして定義する。AST に相当する。-/
 abbrev Program := List Statement
 
-/-- `;` と改行で区切ってプログラムを表示する -/
 instance : ToString Program where
   toString p := p.map Statement.toString |>.foldl (· ++ ·) ""
 
