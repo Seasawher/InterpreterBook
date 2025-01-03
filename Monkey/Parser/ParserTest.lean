@@ -102,6 +102,7 @@ def testIdentifierExpression : IO Unit := do
 
   if id != "foobar" then
     throw <| .userError s!"ident is expected to be 'foobar'. got={id}"
+  IO.println "ok!"
 
 #eval testIdentifierExpression
 
@@ -128,6 +129,7 @@ def testIntegerLiteralExpression : IO Unit := do
 
   if value != 5 then
     throw <| .userError s!"value is expected to be 5. got={value}"
+  IO.println "ok!"
 
 #eval testIntegerLiteralExpression
 
@@ -169,6 +171,8 @@ def testParsingPrefixExpressions : IO Unit := do
 
     if value != testCase.integer then
       throw <| .userError s!"value is expected to be {testCase.integer}. got={value}"
+
+  IO.println "ok!"
 
 #eval testParsingPrefixExpressions
 
@@ -223,5 +227,7 @@ def testParsingInfixExpressions : IO Unit := do
 
     if rightValue != testCase.rightValue then
       throw <| .userError s!"rightValue is expected to be {testCase.rightValue}. got={rightValue}"
+
+  IO.println "ok!"
 
 #eval testParsingInfixExpressions
