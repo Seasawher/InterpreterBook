@@ -8,8 +8,7 @@ def testLetStatement (stmt : Statement) (expectedId : String) : IO Bool := do
 
   -- 期待される識別子と実際の識別子が一致するか
   if actualId != expectedId then
-    IO.eprintln s!"not expected identifier. got={actualId} expected={expectedId}"
-    return false
+    throw <| .userError s!"not expected identifier. got={actualId} expected={expectedId}"
 
   return true
 
@@ -270,3 +269,53 @@ def testOperatorPrecedenceParsing : IO Unit := do
 
 #eval testOperatorPrecedenceParsing
 
+/-- 識別子のテストのためのヘルパー関数
+
+* `exp` はテスト対象の式
+* `value` は期待される識別子の値
+-/
+def testIdentifier (exp : Expression) (value : String) : IO Bool := do
+  let Expression.identifier name := exp
+    | throw <| .userError s!"identifier is expected, but got={exp}"
+
+  if name != value then
+    throw <| .userError s!"identifier is expected to be {value}, but got={name}"
+
+  return true
+
+/-- 整数リテラルのテスト -/
+def testIntegerLiteral (il : Expression) (value : Int) : IO Bool := do
+  let Expression.integerLiteral integ := il
+    | throw <| .userError s!"integerLiteral is expected, but got={il}"
+
+  if integ != value then
+    throw <| .userError s!"integerLiteral is expected to be {value}, but got={integ}"
+
+  return true
+
+/-- リテラルのためのテストヘルパー型クラス -/
+class TestLiteralExpression (α : Type) where
+  /-- 多相的なテストヘルパー -/
+  test : Expression → α → IO Bool
+
+instance : TestLiteralExpression Int where
+  test := testIntegerLiteral
+
+instance : TestLiteralExpression String where
+  test := testIdentifier
+
+/-- 中置演算子のテストのためのヘルパー関数 -/
+def testInfixExpression {α : Type} [TestLiteralExpression α]
+    (exp : Expression) (left : α) (operator : String) (right : α) : IO Bool := do
+
+  let Expression.infix l op r := exp
+    | throw <| .userError s!"infix expression is expected, but got={exp}"
+
+  let _ ← TestLiteralExpression.test l left
+
+  if toString op != operator then
+    throw <| .userError s!"operator is expected to be {operator}, but got={op}"
+
+  let _ ← TestLiteralExpression.test r right
+
+  return true
